@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000" # Map Flask app to localhost:5000
+    environment:
+      - SQLALCHEMY_DATABASE_URI=mysql://user:user_password@db/taskdb
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306" # Map MySQL database to localhost:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: taskdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user_password
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck: # Ensure MySQL is ready before Flask app starts
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
