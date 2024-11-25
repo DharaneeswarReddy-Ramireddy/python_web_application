@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: root_password
+        - name: MYSQL_DATABASE
+          value: taskdb
+        - name: MYSQL_USER
+          value: user
+        - name: MYSQL_PASSWORD
+          value: user_password
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        readinessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - "-h"
+            - "127.0.0.1"
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - "-h"
+            - "127.0.0.1"
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  labels:
+    app: mysql
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+
