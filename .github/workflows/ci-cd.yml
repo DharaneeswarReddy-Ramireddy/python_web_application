@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        run: |
+          export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          export IMAGE_TAG=$(echo $GITHUB_SHA | cut -c1-7)
+          docker-compose build
+          docker tag app:latest $ECR_REGISTRY/dharan-snehith-app:$IMAGE_TAG
+          docker push $ECR_REGISTRY/dharan-snehith-app:$IMAGE_TAG
+          echo "IMAGE_URI=$ECR_REGISTRY/dharan-snehith-app:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Update Kubernetes deployment file
+        run: |
+          sed -i "s|image:.*|image: ${{ env.IMAGE_URI }}|" ./k8s/app-deployment.yaml
+
+      - name: Apply Kubernetes configurations
+        run: |
+          kubectl apply -f ./k8s/app-deployment.yaml
+          kubectl apply -f ./k8s/mysql-deployment.yaml
+
+      - name: Verify deployment
+        run: kubectl rollout status deployment/flask-app
