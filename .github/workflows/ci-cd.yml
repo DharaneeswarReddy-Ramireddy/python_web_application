@@ -45,8 +45,8 @@ jobs:
 
       - name: Update Kubernetes deployment file with the new image
         run: |
-          sed -i "s|866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:.*|866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG|g" ./k8s/app-deployment.yaml
-          cat ./k8s/app-deployment.yaml  # Optional: For debugging, to check the file after update.
+          sed -i "s|866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:.*|866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG|g" app-deployment.yaml
+          cat app-deployment.yaml  # Optional: For debugging, to check the file after update.
 
       - name: Install kubectl
         run: |
@@ -60,15 +60,15 @@ jobs:
 
       - name: Delete existing Kubernetes deployments
         run: |
-          kubectl delete -f ./k8s/app-deployment.yaml || echo "No existing app deployment to delete."
-          kubectl delete -f ./k8s/mysql-deployment.yaml || echo "No existing MySQL deployment to delete."
-          kubectl delete -f ./k8s/mysql-pvc.yaml || echo "No existing PVC to delete."
+          kubectl delete -f app-deployment.yaml || echo "No existing app deployment to delete."
+          kubectl delete -f mysql-deployment.yaml || echo "No existing MySQL deployment to delete."
+          kubectl delete -f mysql-pvc.yaml || echo "No existing PVC to delete."
 
       - name: Apply Kubernetes configurations
         run: |
-          kubectl apply -f ./k8s/mysql-pvc.yaml
-          kubectl apply -f ./k8s/mysql-deployment.yaml
-          kubectl apply -f ./k8s/app-deployment.yaml
+          kubectl apply -f mysql-pvc.yaml
+          kubectl apply -f mysql-deployment.yaml
+          kubectl apply -f app-deployment.yaml
 
       - name: Verify deployment
         run: |
