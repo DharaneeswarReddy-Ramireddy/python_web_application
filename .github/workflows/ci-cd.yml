@@ -43,14 +43,10 @@ jobs:
           docker tag $IMAGE_ID 866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG
           docker push 866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG
 
-      - name: Install yq
+      - name: Update Kubernetes deployment file with the new image
         run: |
-          sudo wget https://github.com/mikefarah/yq/releases/download/v4.6.1/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-
-      - name: Update Kubernetes deployment file with the new image using yq
-        run: |
-          yq eval '.spec.template.spec.containers[0].image = "866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG"' -i app-deployment.yaml
+          sed -i "s|image: 866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:.*|image: 866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG|g" app-deployment.yaml
+          cat app-deployment.yaml  # Optional: For debugging, to check the file after update.
 
       - name: Install kubectl
         run: |
@@ -62,11 +58,13 @@ jobs:
         run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name dharan-cluster
 
+      
       - name: Apply Kubernetes configurations
         run: |
-          kubectl apply -f app-deployment.yaml
           kubectl apply -f mysql-pvc.yaml
           kubectl apply -f mysql-deployment.yaml
+          kubectl apply -f app-deployment.yaml
 
       - name: Verify deployment
-        run: kubectl rollout status deployment/flask-app
+        run: |
+          kubectl rollout status deployment/flask-app
