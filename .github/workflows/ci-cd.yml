@@ -26,15 +26,17 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        run: |
-          echo $(aws ecr get-login-password --region ${{ secrets.AWS_REGION }}) | docker login --username AWS --password-stdin 866934333672.dkr.ecr.us-west-2.amazonaws.com
+        uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build Docker image using Docker Compose and capture the image ID
+      - name: Build Docker image using Docker Compose
         run: |
           docker-compose build
-          IMAGE_ID=$(docker images -q $(docker-compose config --services))
-          echo "Built Image ID: $IMAGE_ID"
+
+      - name: Capture the image ID
+        run: |
+          IMAGE_ID=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep 'python_web_application-app' | head -n 1)
           echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+          echo "Captured Image ID: $IMAGE_ID"
 
       - name: Tag and push the image using the captured ID
         run: |
