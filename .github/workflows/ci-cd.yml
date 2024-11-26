@@ -45,6 +45,7 @@ jobs:
 
       - name: Update Kubernetes deployment file with the new image
         run: |
+          echo "IMAGE_TAG is: $IMAGE_TAG"
           sed -i "s|image: 866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:.*|image: 866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG|g" app-deployment.yaml
           cat app-deployment.yaml  # Optional: For debugging, to check the file after update.
 
