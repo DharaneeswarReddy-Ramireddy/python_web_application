@@ -23,28 +23,28 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Check Docker installation
-        run: docker --version
-
       - name: Install Docker Compose
         run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
       - name: Build, tag, and push image to Amazon ECR
         run: |
-          export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
-          export IMAGE_TAG=$(echo $GITHUB_SHA | cut -c1-7)
+          IMAGE_TAG=$(date +'%Y%m%d%H%M%S')
           docker-compose build
-          docker tag app:latest $ECR_REGISTRY/dharan-snehith-app:$IMAGE_TAG
-          docker push $ECR_REGISTRY/dharan-snehith-app:$IMAGE_TAG
-          echo "IMAGE_URI=$ECR_REGISTRY/dharan-snehith-app:$IMAGE_TAG" >> $GITHUB_ENV
+          docker tag app:latest 866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG
+          docker push 866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG
+          echo "IMAGE_URI=866934333672.dkr.ecr.us-west-2.amazonaws.com/dharan-snehith-app:$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Set up EKS cluster context
+        run: |
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name dharan-cluster
 
       - name: Update Kubernetes deployment file
         run: |
