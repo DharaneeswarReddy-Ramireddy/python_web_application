@@ -59,6 +59,19 @@ def add_task():
         return redirect(url_for('index'))
     return render_template('add_task.html', form=form)
 
+@app.route('/update/<int:task_id>', methods=['GET', 'POST'])
+def update_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    form = TaskForm(obj=task)
+    if form.validate_on_submit():
+        task.title = form.title.data
+        task.description = form.description.data
+        task.done = form.done.data
+        db.session.commit()
+        flash('Task updated successfully!', 'success')
+        return redirect(url_for('index'))
+    return render_template('update_task.html', form=form, task_id=task_id)
+
 @app.route('/delete/<int:task_id>', methods=['POST'])
 def delete_task(task_id):
     task = Task.query.get_or_404(task_id)

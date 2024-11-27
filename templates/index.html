@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-    <h1>Task Management-test</h1>
+    <h1>Task Management</h1>
     <a href="{{ url_for('add_task') }}">Add Task</a>
     {% if tasks %}
     <table class="table table-striped">
@@ -45,6 +45,7 @@
                     <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post" style="display:inline;">
                         <button class="btn btn-danger btn-sm" type="submit">Delete</button>
                     </form>
+                    <a href="{{ url_for('update_task', task_id=task.id) }}" class="btn btn-primary btn-sm" style="margin-left: 10px;">Update</a>
                 </td>
             </tr>
             {% endfor %}
