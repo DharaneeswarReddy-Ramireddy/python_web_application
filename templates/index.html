@@ -19,6 +19,7 @@
         h1 {
             color: #343a40;
             margin-bottom: 20px;
+            text-align: center; /* Center the heading */
         }
         table {
             width: 80%;
@@ -33,14 +34,20 @@
         th {
             background-color: #f2f2f2;
         }
-        a, button {
+        .button-link {
+            display: inline-block;
+            text-decoration: none;
+            color: white;
+            background-color: #198754; /* Bootstrap success color */
+            padding: 10px 15px;
+            border-radius: 5px;
             margin: 5px;
         }
     </style>
 </head>
 <body>
     <h1>Task Management</h1>
-    <a href="{{ url_for('add_task') }}" class="btn btn-success">Add Task</a>
+    <a href="{{ url_for('add_task') }}" class="button-link">Add Task</a>
     {% if tasks %}
     <table class="table table-striped">
         <thead>
@@ -70,7 +77,7 @@
         </tbody>
     </table>    
     {% else %}
-    <p>No tasks available. <a href="{{ url_for('add_task') }}" class="btn btn-success">Add one now</a>.</p>
+    <p>No tasks available. <a href="{{ url_for('add_task') }}" class="button-link">Add one now</a>.</p>
     {% endif %}
 </body>
 </html>
