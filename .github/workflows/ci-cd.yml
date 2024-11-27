@@ -58,7 +58,7 @@ jobs:
 
       - name: Set up EKS cluster context
         run: |
-          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name dharan-cluster
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name dharan-eks-cluster
 
       
       - name: Apply Kubernetes configurations
